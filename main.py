@@ -22,8 +22,15 @@ import functions_for_plotting as ffp
 import model_work_functions as mwf
 
 
+# put into graphic interface.
 
 elements_to_plot = 3, 3
+
+kernel_size = 3, 3
+
+pool_size= 2, 2
+
+codes_for_rebuilding_model = ['Yes', 'Y', 'True', 'T']
 
 try:
     
@@ -36,20 +43,32 @@ except FileNotFoundError:
 filepath = f'./saved_models/model_{models_built_amount}'
 
 
-
-
 # print('TakaoGothic' in [f.name for f in matplotlib.font_manager.fontManager.ttflist])
 # print(matplotlib.get_cachedir())
 
-plt.rcParams['font.family'] = 'TakaoGothic';
+datasets = ['kmnist', 'k-49', 'kkanji']
 
-imgs = np.load('kmnist-train-imgs.npz')['arr_0']
+# put into graphic interface.
 
-imgs = imgs.reshape(imgs.shape[0], imgs.shape[1], imgs.shape[2], 1)
+dataset_chosen = datasets[0]
 
-labels = np.load('kmnist-train-labels.npz')['arr_0']
+# dataset_chosen = datasets[1]
 
-classmap = pd.read_csv('kmnist_classmap.csv')
+# dataset_chosen = datasets[2]
+
+
+
+plt.rcParams['font.family'] = 'TakaoGothic'
+
+if dataset_chosen == 'kmnist' or 'k-49':
+
+    imgs = np.load(f'{dataset_chosen}-train-imgs.npz')['arr_0']
+    
+    imgs = imgs.reshape(imgs.shape[0], imgs.shape[1], imgs.shape[2], 1)
+    
+    labels = np.load(f'{dataset_chosen}-train-labels.npz')['arr_0']
+    
+    classmap = pd.read_csv(f'{dataset_chosen}_classmap.csv')
 
 indexes = ffp.plot_chars(imgs, labels, classmap, elements_to_plot)
 
@@ -64,26 +83,24 @@ try:
 except (FileNotFoundError, OSError):
         
     rebuild_model = 'Y'
+    
 
-if rebuild_model == 'Yes' or rebuild_model == 'True' or rebuild_model == 'Y':
+if rebuild_model in codes_for_rebuilding_model:
     
     X_train, X_test, Y_train, Y_test = skms.train_test_split(imgs, labels, test_size=0.20, random_state=42)
     
-    model = mwf.build_model(X_train, Y_train, X_test, Y_test, filepath)
+    model = mwf.build_model(X_train, Y_train, X_test, Y_test, filepath, kernel_size, pool_size, len(set(labels)))
+    
+    do_a_prediction = str(input('Make a new prediction? '))
+    
+    if do_a_prediction in codes_for_rebuilding_model:
+        
+        mwf.make_and_plot_prediction(imgs, indexes, model, labels, classmap, elements_to_plot)
     
 else:
     
     model = mwf.choose_and_load_model(models_built_amount)
+    
+    print(model.summary)
 
-    imgs_to_predict = imgs[indexes].reshape(
-        imgs[indexes].shape[0]*imgs[indexes].shape[1], 
-        imgs[indexes].shape[2], imgs[indexes].shape[3], 1)
-    
-    prediction = model.predict(imgs_to_predict)
-    
-    classes = np.argmax(prediction, axis = 1)
-    
-    print("Plotting predictions")
-    
-    ffp.plot_chars(imgs, labels, classmap, elements_to_plot, indexes = indexes, 
-               prediction = classmap.char[classes].values.reshape(elements_to_plot))
+    mwf.make_and_plot_prediction(imgs, indexes, model, labels, classmap, elements_to_plot)

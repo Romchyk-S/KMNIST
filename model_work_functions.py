@@ -9,26 +9,34 @@ import tensorflow.keras.layers as tkl
 
 import tensorflow.keras.losses as tklosses
 
-import time as tm
-
 import tensorflow.keras.models as tkm
 
-def build_model(X_train, Y_train, X_test, Y_test, filepath):
+import time as tm
+
+import numpy as np
+
+import functions_for_plotting as ffp
+
+
+
+def build_model(X_train, Y_train, X_test, Y_test, filepath, kernel_size, pool_size, classes_amount: int):
     
     model = tkm.Sequential([
         
     tkl.Rescaling(1./255),
     
-     tkl.Conv1D(32, 3, activation='relu'),
-     tkl.MaxPooling2D(),
+     tkl.Conv2D(32, kernel_size = kernel_size, activation='relu', input_shape=(28,28,1)),
+     tkl.MaxPooling2D(pool_size = pool_size),
      
-     tkl.Conv1D(64, 3, activation='relu'),
-     tkl.MaxPooling2D(),
+     tkl.Conv2D(64, kernel_size = kernel_size, activation='relu'),
+     tkl.MaxPooling2D(pool_size = pool_size),
      
-     tkl.Conv1D(128, 3, activation='relu'),
-     tkl.MaxPooling2D(),
+     tkl.Conv2D(128, kernel_size = kernel_size, activation='relu'),
+     tkl.MaxPooling2D(pool_size = pool_size),
     
      tkl.Flatten(),
+     
+     # try and show the inner layer workings.
      
      tkl.Dense(128, activation='relu'),
      
@@ -38,15 +46,15 @@ def build_model(X_train, Y_train, X_test, Y_test, filepath):
      
      tkl.Dense(16, activation='relu'),
      
-     tkl.Dense(10)])
+     tkl.Dense(classes_amount)])
     
-    model.compile(loss = tklosses.SparseCategoricalCrossentropy(from_logits=True), optimizer='adam', metrics=['accuracy'])
+    model.compile(loss = tklosses.SparseCategoricalCrossentropy(from_logits = True), optimizer='adam', metrics=['accuracy'])
     
     print("Training the model")
     
     start = tm.perf_counter()
     
-    model.fit(X_train, Y_train, epochs = 1) # train the CNN
+    model.fit(X_train, Y_train, epochs = 10) # train the CNN
     
     print(f"Training takes: {tm.perf_counter()-start} seconds.")
     
@@ -59,7 +67,6 @@ def build_model(X_train, Y_train, X_test, Y_test, filepath):
     print("Summary of the model:")
     
     model.summary()
-    
     
     tkm.save_model(model, filepath)
     
@@ -80,3 +87,18 @@ def choose_and_load_model(models_built_amount: int):
     model = tkm.load_model(f'./saved_models/model_{chosen_model}', compile = True)
        
     return model
+
+def make_and_plot_prediction(imgs, indexes, model, labels, classmap, elements_to_plot):
+    
+    imgs_to_predict = imgs[indexes].reshape(
+        imgs[indexes].shape[0]*imgs[indexes].shape[1], 
+        imgs[indexes].shape[2], imgs[indexes].shape[3], 1)
+    
+    prediction = model.predict(imgs_to_predict)
+    
+    classes = np.argmax(prediction, axis = 1)
+    
+    print("Plotting predictions")
+    
+    ffp.plot_chars(imgs, labels, classmap, elements_to_plot, indexes = indexes, 
+               prediction = classmap.char[classes].values.reshape(elements_to_plot))
