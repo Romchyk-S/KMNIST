@@ -5,19 +5,19 @@ Created on Thu Feb 15 17:48:11 2024
 @author: romas
 """
 
-import numpy as np
+# import numpy as np
 
 import matplotlib.pyplot as plt
 
-import pandas as pd
+# import pandas as pd
 
 import tensorflow.keras.models as tkm
 
-import sklearn.model_selection as skms
+# import sklearn.model_selection as skms
 
 import os
 
-import functions_for_plotting as ffp
+import load_plot_data as lpd
 
 import model_work_functions as mwf
 
@@ -57,20 +57,11 @@ dataset_chosen = datasets[0]
 # dataset_chosen = datasets[2]
 
 
-
 plt.rcParams['font.family'] = 'TakaoGothic'
 
-if dataset_chosen == 'kmnist' or 'k-49':
+X_train, Y_train, X_test, Y_test, classmap = lpd.data_loading(dataset_chosen)
 
-    imgs = np.load(f'{dataset_chosen}-train-imgs.npz')['arr_0']
-    
-    imgs = imgs.reshape(imgs.shape[0], imgs.shape[1], imgs.shape[2], 1)
-    
-    labels = np.load(f'{dataset_chosen}-train-labels.npz')['arr_0']
-    
-    classmap = pd.read_csv(f'{dataset_chosen}_classmap.csv')
-
-indexes = ffp.plot_chars(imgs, labels, classmap, elements_to_plot)
+indexes = lpd.plot_chars(X_train, Y_train, classmap, elements_to_plot)
 
 try:
     
@@ -87,20 +78,34 @@ except (FileNotFoundError, OSError):
 
 if rebuild_model in codes_for_rebuilding_model:
     
-    X_train, X_test, Y_train, Y_test = skms.train_test_split(imgs, labels, test_size=0.20, random_state=42)
+    # X_train, X_test, Y_train, Y_test = skms.train_test_split(imgs, labels, test_size=0.20, random_state=42)
     
-    model = mwf.build_model(X_train, Y_train, X_test, Y_test, filepath, kernel_size, pool_size, len(set(labels)))
+    model = mwf.build_model(X_train, Y_train, X_test, Y_test, filepath, kernel_size, pool_size, len(set(Y_train)))
     
     do_a_prediction = str(input('Make a new prediction? '))
     
     if do_a_prediction in codes_for_rebuilding_model:
         
-        mwf.make_and_plot_prediction(imgs, indexes, model, labels, classmap, elements_to_plot)
+        mwf.make_and_plot_prediction(X_train, indexes, model, Y_train, classmap, elements_to_plot)
     
 else:
     
-    model = mwf.choose_and_load_model(models_built_amount)
+    model, chosen_model = mwf.choose_and_load_model(models_built_amount)
     
-    print(model.summary)
+    filepath = f'./saved_models/model_{chosen_model}'
+    
+    try:
+        
+        open(f'{filepath}/model_summary.txt', 'r')
+        
+    except FileNotFoundError:
+        
+        print('Adding uncreated summary')
+        
+        with open(f'{filepath}/model_summary.txt', 'w') as f:
+        
+            model.summary(print_fn=lambda x: f.write(x + '\n'))
+    
+    model.summary()
 
-    mwf.make_and_plot_prediction(imgs, indexes, model, labels, classmap, elements_to_plot)
+    mwf.make_and_plot_prediction(X_train, indexes, model, Y_train, classmap, elements_to_plot)

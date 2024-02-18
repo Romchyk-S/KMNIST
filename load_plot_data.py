@@ -9,6 +9,29 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 
+import pandas as pd
+
+
+def data_loading(dataset_chosen: str):
+    
+    if dataset_chosen == 'kmnist' or 'k-49':
+    
+        X_train = np.load(f'./{dataset_chosen}/{dataset_chosen}-train-imgs.npz')['arr_0']
+        
+        X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], X_train.shape[2], 1)
+        
+        Y_train = np.load(f'./{dataset_chosen}/{dataset_chosen}-train-labels.npz')['arr_0']
+        
+        X_test = np.load(f'./{dataset_chosen}/{dataset_chosen}-test-imgs.npz')['arr_0']
+        
+        X_test = X_test.reshape(X_test.shape[0], X_test.shape[1], X_test.shape[2], 1)
+        
+        Y_test = np.load(f'./{dataset_chosen}/{dataset_chosen}-test-labels.npz')['arr_0']
+        
+        classmap = pd.read_csv(f'./{dataset_chosen}/{dataset_chosen}_classmap.csv')
+        
+        return X_train, Y_train, X_test, Y_test, classmap
+
 def plot_chars(imgs, labels, classmap, plotted_elements: tuple, *args,  **kwargs):
     
     indexes = kwargs.get("indexes", [])

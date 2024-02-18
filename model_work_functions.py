@@ -15,7 +15,7 @@ import time as tm
 
 import numpy as np
 
-import functions_for_plotting as ffp
+import load_plot_data as lpd
 
 
 
@@ -54,7 +54,7 @@ def build_model(X_train, Y_train, X_test, Y_test, filepath, kernel_size, pool_si
     
     start = tm.perf_counter()
     
-    model.fit(X_train, Y_train, epochs = 10) # train the CNN
+    model.fit(X_train, Y_train, epochs = 1) # train the CNN
     
     print(f"Training takes: {tm.perf_counter()-start} seconds.")
     
@@ -68,7 +68,15 @@ def build_model(X_train, Y_train, X_test, Y_test, filepath, kernel_size, pool_si
     
     model.summary()
     
-    tkm.save_model(model, filepath)
+    tkm.save_model(model, filepath) 
+    
+    with open(f'{filepath}/model_summary.txt', 'w') as f:
+        
+        summary = model.summary
+        
+        print(summary)
+        
+        model.summary(print_fn=lambda x: f.write(x + '\n'))
     
     return model
     
@@ -86,7 +94,7 @@ def choose_and_load_model(models_built_amount: int):
        
     model = tkm.load_model(f'./saved_models/model_{chosen_model}', compile = True)
        
-    return model
+    return model, chosen_model
 
 def make_and_plot_prediction(imgs, indexes, model, labels, classmap, elements_to_plot):
     
@@ -100,5 +108,5 @@ def make_and_plot_prediction(imgs, indexes, model, labels, classmap, elements_to
     
     print("Plotting predictions")
     
-    ffp.plot_chars(imgs, labels, classmap, elements_to_plot, indexes = indexes, 
+    lpd.plot_chars(imgs, labels, classmap, elements_to_plot, indexes = indexes, 
                prediction = classmap.char[classes].values.reshape(elements_to_plot))
