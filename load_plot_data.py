@@ -44,39 +44,33 @@ def plot_chars(imgs, labels, classmap, plotted_elements: tuple, *args,  **kwargs
         
         prediction = kwargs.get('prediction')
         
-        for ax, indexes_sublist, classes_sublist in list(zip(axes_list, indexes, prediction)):
-            
-            for ax_1, index, predicted_class in list(zip(ax, indexes_sublist, classes_sublist)):
+        for index, ax in enumerate(axes_list.flat):
                 
-                ax_1.axis('off')
+                ax.axis('off')
+                
+                predicted_class = prediction[index]
                 
                 letter = imgs[index]
                 
-                ax_1.imshow(letter)
+                ax.imshow(letter)
                 
-                ax_1.set_title(f"p: {predicted_class}, t: {classmap.char[labels[index]]}")
+                ax.set_title(f"p: {predicted_class}, t: {classmap.char[labels[index]]}")
         
     else:
 
-        for ax in axes_list:
+        for ax in axes_list.flat:
+        
+            ax.axis('off')
             
-            indexes_sublist = []
+            index = np.random.randint(0, len(imgs))
             
-            for ax_1 in ax:
-                
-                ax_1.axis('off')
-                
-                index = np.random.randint(0, len(imgs))
-                
-                indexes_sublist.append(index)
-                
-                letter = imgs[index]
+            indexes.append(index)
             
-                ax_1.imshow(letter)
-                
-                ax_1.set_title(classmap.char[labels[index]])
-                
-            indexes.append(indexes_sublist)
+            letter = imgs[index]
+        
+            ax.imshow(letter)
+            
+            ax.set_title(classmap.char[labels[index]])
             
     plt.show()
             

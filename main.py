@@ -21,7 +21,6 @@ import load_plot_data as lpd
 
 import model_work_functions as mwf
 
-
 # put into graphic interface.
 
 elements_to_plot = 3, 3
@@ -29,6 +28,10 @@ elements_to_plot = 3, 3
 kernel_size = 3, 3
 
 pool_size= 2, 2
+
+epochs = 1
+
+batch_size = 4
 
 codes_for_rebuilding_model = ['Yes', 'Y', 'True', 'T']
 
@@ -63,6 +66,13 @@ X_train, Y_train, X_test, Y_test, classmap = lpd.data_loading(dataset_chosen)
 
 indexes = lpd.plot_chars(X_train, Y_train, classmap, elements_to_plot)
 
+# mwf.build_torch_model(X_train, Y_train, X_test, Y_test, batch_size, epochs)
+
+
+for param in model.parameters():
+    
+    print(param)
+
 try:
     
     os.listdir('./saved_models/')
@@ -78,9 +88,9 @@ except (FileNotFoundError, OSError):
 
 if rebuild_model in codes_for_rebuilding_model:
     
-    # X_train, X_test, Y_train, Y_test = skms.train_test_split(imgs, labels, test_size=0.20, random_state=42)
-    
-    model = mwf.build_model(X_train, Y_train, X_test, Y_test, filepath, kernel_size, pool_size, len(set(Y_train)))
+    model = mwf.build_model(X_train, Y_train, X_test, Y_test, filepath, kernel_size, 
+                                pool_size, len(set(Y_train)), batch_size, epochs)
+
     
     do_a_prediction = str(input('Make a new prediction? '))
     
