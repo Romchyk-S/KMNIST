@@ -11,6 +11,8 @@ import numpy as np
 
 import pandas as pd
 
+import os as os
+
 
 def data_loading(dataset_chosen: str):
     
@@ -34,13 +36,24 @@ def data_loading(dataset_chosen: str):
 
 def plot_chars(imgs, labels, classmap, plotted_elements: tuple, *args,  **kwargs):
     
+   
     indexes = kwargs.get("indexes", [])
+    
+    model_name = kwargs.get("model_name", "")
+    
+    true_classes = classmap.char[labels[indexes]].values
     
     indexes_given = len(indexes) > 0
 
     fig, axes_list = plt.subplots(plotted_elements[0], plotted_elements[1], figsize=(plotted_elements[0]+1, plotted_elements[0]+1))
     
-    if indexes_given:
+    fig.suptitle(model_name)
+    
+    if indexes_given: 
+        
+        plot_folder = './plots'
+    
+        image_num = len(os.listdir(plot_folder))
         
         prediction = kwargs.get('prediction')
         
@@ -54,7 +67,9 @@ def plot_chars(imgs, labels, classmap, plotted_elements: tuple, *args,  **kwargs
                 
                 ax.imshow(letter)
                 
-                ax.set_title(f"p: {predicted_class}, t: {classmap.char[labels[index]]}")
+                ax.set_title(f"p: {predicted_class}, t: {true_classes[index]}")
+                
+        plt.savefig(f'./plots/image_{image_num}.png')
         
     else:
 

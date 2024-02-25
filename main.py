@@ -27,23 +27,37 @@ elements_to_plot = 3, 3
 
 kernel_size = 3, 3
 
-pool_size= 2, 2
+pool_size = 2, 2
 
-epochs = 1
+epochs = 10
 
-batch_size = 4
+batch_size = 5
 
 codes_for_rebuilding_model = ['Yes', 'Y', 'True', 'T']
 
+print()
+
 try:
     
-    models_built_amount = len(os.listdir('./saved_models'))
+    models_built_amount_keras = len(os.listdir('./saved_models_keras'))
     
 except FileNotFoundError:
     
-    models_built_amount = 0
+    models_built_amount_keras = 0
+    
 
-filepath = f'./saved_models/model_{models_built_amount}'
+try:
+    
+    models_built_amount_pytorch = len(os.listdir('./saved_models_pytorch'))
+    
+except FileNotFoundError:
+    
+    models_built_amount_pytorch = 0
+    
+
+filepath_keras = f'./saved_models_keras/model_{models_built_amount_keras}'
+
+filepath_pytorch = f'./saved_models_pytorch/model_{models_built_amount_pytorch}'
 
 
 # print('TakaoGothic' in [f.name for f in matplotlib.font_manager.fontManager.ttflist])
@@ -64,20 +78,15 @@ plt.rcParams['font.family'] = 'TakaoGothic'
 
 X_train, Y_train, X_test, Y_test, classmap = lpd.data_loading(dataset_chosen)
 
+classes_amount = len(set(Y_train))
+
 indexes = lpd.plot_chars(X_train, Y_train, classmap, elements_to_plot)
-
-# mwf.build_torch_model(X_train, Y_train, X_test, Y_test, batch_size, epochs)
-
-
-for param in model.parameters():
-    
-    print(param)
 
 try:
     
-    os.listdir('./saved_models/')
+    os.listdir('./saved_models_keras/')
     
-    model = tkm.load_model(f'./saved_models/model_{0}', compile = True)
+    tkm.load_model('./saved_models_keras/model_0', compile = True)
     
     rebuild_model = str(input('Build a new model? '))
 
@@ -88,34 +97,49 @@ except (FileNotFoundError, OSError):
 
 if rebuild_model in codes_for_rebuilding_model:
     
-    model = mwf.build_model(X_train, Y_train, X_test, Y_test, filepath, kernel_size, 
-                                pool_size, len(set(Y_train)), batch_size, epochs)
-
+    print("Keras training")
+    
+    model_keras = mwf.build_keras_model(X_train, Y_train, X_test, Y_test, filepath_keras, epochs, kernel_size, 
+                                pool_size, classes_amount, batch_size)
+    
+    
+    print("Pytorch training")
+    
+    model_pytorch = mwf.build_torch_model(X_train, Y_train, X_test, Y_test, filepath_pytorch, epochs, kernel_size, 
+                                          pool_size, classes_amount, batch_size)
+    
+    # print(model.layers[0].weight)
     
     do_a_prediction = str(input('Make a new prediction? '))
     
     if do_a_prediction in codes_for_rebuilding_model:
         
-        mwf.make_and_plot_prediction(X_train, indexes, model, Y_train, classmap, elements_to_plot)
+        print("Keras prediction")
+    
+        mwf.make_and_plot_prediction(X_train, Y_train, indexes, model_keras, classmap, elements_to_plot, f'Keras model_{models_built_amount_keras}')
+        
+        print("Pytorch prediction")
+        
+        mwf.make_and_plot_prediction(X_train, Y_train, indexes, model_pytorch, classmap, elements_to_plot, f'Pytorch model_{models_built_amount_pytorch}')
     
 else:
     
-    model, chosen_model = mwf.choose_and_load_model(models_built_amount)
+    model_keras, chosen_model = mwf.choose_and_load_model(models_built_amount_keras)
     
-    filepath = f'./saved_models/model_{chosen_model}'
+    filepath_keras = f'./saved_models_keras/model_{chosen_model}'
     
     try:
         
-        open(f'{filepath}/model_summary.txt', 'r')
+        open(f'{filepath_keras}/model_summary.txt', 'r')
         
     except FileNotFoundError:
         
         print('Adding uncreated summary')
         
-        with open(f'{filepath}/model_summary.txt', 'w') as f:
+        with open(f'{filepath_keras}/model_summary.txt', 'w') as f:
         
-            model.summary(print_fn=lambda x: f.write(x + '\n'))
+            model_keras.summary(print_fn=lambda x: f.write(x + '\n'))
     
-    model.summary()
+    model_keras.summary()
 
-    mwf.make_and_plot_prediction(X_train, indexes, model, Y_train, classmap, elements_to_plot)
+    mwf.make_and_plot_prediction(X_train, Y_train, indexes, model_keras, classmap, elements_to_plot)

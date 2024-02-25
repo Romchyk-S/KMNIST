@@ -25,58 +25,19 @@ import torch.optim as optim
 
 import torch.utils.data as tudata
 
-class NN_torch(torch.nn.Module):
-    
-    def __init__(self):
-        
-        super().__init__()
-        
-        self.layers = nn.Sequential(
-            nn.Softmax(dim=0),
-            nn.Conv2d(1, 32, kernel_size=3),
-            nn.ReLU(),
-            nn.MaxPool2d((2, 2)),
-            nn.Conv2d(32, 64, 3),
-            nn.ReLU(),
-            nn.MaxPool2d((2, 2)),
-            nn.Conv2d(64, 128, 3),
-            nn.ReLU(),
-            nn.MaxPool2d((2, 2)),            
-            nn.Flatten(),
-            
-            nn.Linear(128, 128),
-            nn.ReLU(),
-            nn.Linear(128, 64),
-            nn.ReLU(),
-            nn.Linear(64, 32),
-            nn.ReLU(),
-            nn.Linear(32, 16),
-            nn.ReLU(),
-            nn.Linear(16, 10),
-            nn.ReLU(),
-            nn.Softmax(dim=1)
-            )
-        
-        self.double()
-        
-    def forward(self, x):
-        
-        # print("Forward")
-        
-        logits = self.layers(x)
-        
-        return logits
+import nn_torch_class as nntc
 
 
-def build_torch_model(X_train, Y_train, X_test, Y_test, batch_size: int, epochs: int):
+def build_torch_model(X_train, Y_train, X_test, Y_test, filepath: str, epochs: int,  kernel_size: tuple, pool_size: tuple, classes_amount: int,  batch_size: int):
     
-    model = NN_torch()
+    input_channels = X_train.shape[3]
+    
+    model = nntc.NN_torch(pool_size, kernel_size, classes_amount, input_channels)
 
     criterion = nn.CrossEntropyLoss()
 
     optimizer = optim.SGD(model.parameters())
 
-    
     X_train = X_train.reshape(X_train.shape[0], X_train.shape[3], X_train.shape[1], X_train.shape[2])
 
     X_train = torch.tensor(X_train, dtype=float)
@@ -87,7 +48,6 @@ def build_torch_model(X_train, Y_train, X_test, Y_test, batch_size: int, epochs:
     
     dataset = tudata.TensorDataset(X_train, Y_train)
     
-     
     X_test = X_test.reshape(X_test.shape[0], X_test.shape[3],X_test.shape[1], X_test.shape[2])
 
     X_test = torch.tensor(X_test, dtype=float)
@@ -106,72 +66,119 @@ def build_torch_model(X_train, Y_train, X_test, Y_test, batch_size: int, epochs:
     test_loader = torch.utils.data.DataLoader(test_dataset,
                                                   batch_size=batch_size)
     
+    start = tm.perf_counter()
+    
     for epoch in range(epochs):  # loop over the dataset multiple times
     
-        print(epoch)
-        
-        running_loss = 0.0
-
-        for epoch in range(epochs):  # loop over the dataset multiple times
-        
-            print(epoch)
-            
-            running_loss = 0.0
+        total_correct, total_samples = 0, 0
     
-            for (i, data) in enumerate(training_loader):
-                
-                # print('Batch {}'.format(i + 1))
-                
-                # print(running_loss)
-                
-                # basic training loop
-                
-                x, y = data
-                
-                optimizer.zero_grad()
-                
-                outputs = model(x)
-                
-                loss = criterion(outputs, y)
-                
-                loss.backward()
-                
-                optimizer.step()
-                
-                running_loss += loss.item()
-                
-                
-                # if i % 1000 == 999:    # Every 1000 mini-batches...
-                
-                #     print('Batch {}'.format(i + 1))
-                    
-                #     print(running_loss)
+        start_epoch = tm.perf_counter()
+    
+        print(f"Epoch {epoch}")
+        
+        running_loss_train = 0.0
 
+        for (i, data) in enumerate(training_loader):
+            
+            x, y = data
+            
+            optimizer.zero_grad()
+            
+            outputs = model(x)
+            
+            _, predicted = torch.max(outputs, 1)
+
+            # Update the running total of correct predictions and samples
+            total_correct += (predicted == y).sum().item()
+            
+            total_samples += y.size(0)
+            
+            loss = criterion(outputs, y)
+            
+            loss.backward()
+            
+            optimizer.step()
+            
+            running_loss_train += loss.item()
+            
+            
+            # if i % 1000 == 999:    # Every 1000 mini-batches...
+            
+            #     print('Batch {}'.format(i + 1))
+                
+            #     print(running_loss)
+        
+            
+        # print(x)
+        
+        # print(outputs)
+            
+        # print(predicted)
+        
+        # print(y)
+        
+        # print(model.layers[0].weight)
+        
+        print(f"Time taken to train on epoch {epoch}: {round(tm.perf_counter()-start_epoch,3)} seconds")
+            
+        print(f"Loss: {round(running_loss_train/len(dataset), 3)}")
+        
+        accuracy = round(100 * (total_correct / total_samples), 3)
+        
+        print(f"Accuracy: {accuracy}%")
+        
+        print()
+            
+    print(f"Time taken to train {round(tm.perf_counter()-start, 3)} seconds")
+    
+    total_correct, total_samples = 0, 0
+    
     for (i, data) in enumerate(test_loader):
+        
+        running_loss_test = 0.0
         
         x, y = data
         
         outputs = model(x)
         
-        loss = criterion(outputs, y)
-        
-        loss.backward()
-        
-        optimizer.step()
-        
-        running_loss += loss.item()
+        _, predicted = torch.max(outputs, 1)
 
-        # print(outputs.argmax(1))
+        # Update the running total of correct predictions and samples
+        total_correct += (predicted == y).sum().item()
+        
+        total_samples += y.size(0)
+        
+        running_loss_test += loss.item()
+        
+    # print(x)
     
+    # print(outputs)
+        
+    # print(predicted)
     
+    # print(y)
+    
+    # print(model.layers[0].weight)
 
-def build_model(X_train, Y_train, X_test, Y_test, filepath, kernel_size, pool_size, classes_amount: int, batch_size: int):
+    print(f"Test_set_loss: {round(running_loss_test, 3)}")
+    
+    accuracy = round(100 * (total_correct / total_samples), 3)
+    
+    print(f"Accuracy on test set: {accuracy}")
+    
+    print()
+    
+    torch.save(model, filepath)
+    
+    return model
+    
+def build_keras_model(X_train, Y_train, X_test, Y_test, filepath: str, epochs: int, kernel_size: tuple, pool_size: tuple, classes_amount: int, batch_size: int):
     
     model = tkm.Sequential([
         
     tkl.Rescaling(1./255),
     
-     tkl.Conv2D(32, kernel_size = kernel_size, activation='relu', input_shape=(28,28,1)),
+     tkl.Conv2D(32, kernel_size = kernel_size, activation='relu', input_shape=X_train.shape[1:4]),
      tkl.MaxPooling2D(pool_size = pool_size),
      
      tkl.Conv2D(64, kernel_size = kernel_size, activation='relu'),
@@ -196,13 +203,15 @@ def build_model(X_train, Y_train, X_test, Y_test, filepath, kernel_size, pool_si
     
     model.compile(loss = tklosses.SparseCategoricalCrossentropy(from_logits = True), optimizer='adam', metrics=['accuracy'])
     
-    print(X_train.shape)
+    # print(X_train.shape)
+    
+    # print(X_train.shape[1:4])
 
     print("Training the model")
     
     start = tm.perf_counter()
     
-    model.fit(X_train, Y_train, epochs = 10, batch_size=batch_size, show_metric=True) # train the CNN
+    model.fit(X_train, Y_train, epochs = epochs, batch_size = batch_size) # train the CNN
     
     print(f"Training takes: {tm.perf_counter()-start} seconds.")
     
@@ -224,6 +233,8 @@ def build_model(X_train, Y_train, X_test, Y_test, filepath, kernel_size, pool_si
         
         print(summary)
         
+        print()
+        
         model.summary(print_fn=lambda x: f.write(x + '\n'))
     
     return model
@@ -244,15 +255,31 @@ def choose_and_load_model(models_built_amount: int):
        
     return model, chosen_model
 
-def make_and_plot_prediction(imgs, indexes, model, labels, classmap, elements_to_plot):
+def make_and_plot_prediction(imgs, labels, indexes, model, classmap, elements_to_plot, model_name: str):
     
     imgs_to_predict = imgs[indexes]
     
-    prediction = model.predict(imgs_to_predict)
+    try:
+        
+    
+        prediction = model.predict(imgs_to_predict)
+        
+    except AttributeError:
+        
+        imgs_to_predict = imgs_to_predict.reshape(imgs_to_predict.shape[0], imgs_to_predict.shape[3], 
+                                          imgs_to_predict.shape[1], imgs_to_predict.shape[2])
+        
+        imgs_to_predict = torch.tensor(imgs_to_predict, dtype=float)
+        
+        prediction = model(imgs_to_predict)
+        
+        prediction = prediction.detach().numpy()
     
     classes = np.argmax(prediction, axis = 1)
-    
+
     print("Plotting predictions")
     
     lpd.plot_chars(imgs, labels, classmap, elements_to_plot, indexes = indexes, 
-               prediction = classmap.char[classes].values)
+               prediction = classmap.char[classes].values, model_name = model_name)
+    
+    print()
