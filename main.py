@@ -17,6 +17,8 @@ import tensorflow.keras.models as tkm
 
 import os
 
+import customtkinter as ctk
+
 import load_plot_data as lpd
 
 import model_work_functions as mwf
@@ -116,11 +118,13 @@ if rebuild_model in codes_for_rebuilding_model:
         
         print("Keras prediction")
     
-        mwf.make_and_plot_prediction(X_train, Y_train, indexes, model_keras, classmap, elements_to_plot, f'Keras model_{models_built_amount_keras}')
+        mwf.make_and_plot_prediction(X_train, Y_train, indexes, model_keras, classmap, elements_to_plot, 
+                                     f'Keras model_{models_built_amount_keras}', dataset_chosen)
         
         print("Pytorch prediction")
         
-        mwf.make_and_plot_prediction(X_train, Y_train, indexes, model_pytorch, classmap, elements_to_plot, f'Pytorch model_{models_built_amount_pytorch}')
+        mwf.make_and_plot_prediction(X_train, Y_train, indexes, model_pytorch, classmap, elements_to_plot, 
+                                     f'Pytorch model_{models_built_amount_pytorch}', dataset_chosen)
     
 else:
     

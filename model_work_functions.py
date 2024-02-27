@@ -255,7 +255,7 @@ def choose_and_load_model(models_built_amount: int):
        
     return model, chosen_model
 
-def make_and_plot_prediction(imgs, labels, indexes, model, classmap, elements_to_plot, model_name: str):
+def make_and_plot_prediction(imgs, labels, indexes, model, classmap, elements_to_plot, model_name: str, dataset: str):
     
     imgs_to_predict = imgs[indexes]
     
@@ -280,6 +280,6 @@ def make_and_plot_prediction(imgs, labels, indexes, model, classmap, elements_to
     print("Plotting predictions")
     
     lpd.plot_chars(imgs, labels, classmap, elements_to_plot, indexes = indexes, 
-               prediction = classmap.char[classes].values, model_name = model_name)
+               prediction = classmap.char[classes].values, model_name = model_name, dataset = dataset)
     
     print()

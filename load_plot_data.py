@@ -36,8 +36,9 @@ def data_loading(dataset_chosen: str):
 
 def plot_chars(imgs, labels, classmap, plotted_elements: tuple, *args,  **kwargs):
     
-   
     indexes = kwargs.get("indexes", [])
+    
+    dataset = kwargs.get("dataset", "")
     
     model_name = kwargs.get("model_name", "")
     
@@ -47,9 +48,11 @@ def plot_chars(imgs, labels, classmap, plotted_elements: tuple, *args,  **kwargs
 
     fig, axes_list = plt.subplots(plotted_elements[0], plotted_elements[1], figsize=(plotted_elements[0]+1, plotted_elements[0]+1))
     
-    fig.suptitle(model_name)
+    
     
     if indexes_given: 
+        
+        fig.suptitle(dataset + ' ' + model_name)
         
         plot_folder = './plots'
     
@@ -72,6 +75,8 @@ def plot_chars(imgs, labels, classmap, plotted_elements: tuple, *args,  **kwargs
         plt.savefig(f'./plots/image_{image_num}.png')
         
     else:
+        
+        fig.suptitle(dataset)
 
         for ax in axes_list.flat:
         
