@@ -100,24 +100,6 @@ def build_torch_model(X_train, Y_train, X_test, Y_test, filepath: str, epochs: i
             optimizer.step()
             
             running_loss_train += loss.item()
-            
-            
-            # if i % 1000 == 999:    # Every 1000 mini-batches...
-            
-            #     print('Batch {}'.format(i + 1))
-                
-            #     print(running_loss)
-        
-            
-        # print(x)
-        
-        # print(outputs)
-            
-        # print(predicted)
-        
-        # print(y)
-        
-        # print(model.layers[0].weight)
         
         print(f"Time taken to train on epoch {epoch}: {round(tm.perf_counter()-start_epoch,3)} seconds")
             
@@ -239,22 +221,6 @@ def build_keras_model(X_train, Y_train, X_test, Y_test, filepath: str, epochs: i
     
     return model
     
-def choose_and_load_model(models_built_amount: int):
-    
-    chosen_model = int(input(f'Choose a model number from 0 till {models_built_amount-1}: '))
-
-    if chosen_model > models_built_amount-1:
-       
-       print("The number is too big, choosing the last built model")
-       
-       print()
-       
-       chosen_model = models_built_amount-1
-       
-    model = tkm.load_model(f'./saved_models/model_{chosen_model}', compile = True)
-       
-    return model, chosen_model
-
 def make_and_plot_prediction(imgs, labels, indexes, model, classmap, elements_to_plot, model_name: str, dataset: str):
     
     imgs_to_predict = imgs[indexes]

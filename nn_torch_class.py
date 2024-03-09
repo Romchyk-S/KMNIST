@@ -43,8 +43,6 @@ class NN_torch(nn.Module):
         
     def forward(self, x):
         
-        # print("Forward")
-        
         logits = self.layers(x)
         
         return logits
