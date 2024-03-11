@@ -41,7 +41,30 @@ def create_root():
     
     return root, new_parameters
 
-def main_graphing(text_for_labels, datasets, rebuild_model):
+def choose_language(button_text, languages_supported):
+    
+    root, new_parameters = create_root()
+    
+    language = ctk.StringVar()
+    
+    label_1 = ctk.CTkLabel(root, text='Оберіть мову / Choose the language')
+    
+    textbox_1 = ctk.CTkOptionMenu(root, values=languages_supported, variable=language)
+    
+    label_1.pack()
+    
+    textbox_1.pack()
+    
+    button_write_data = ctk.CTkButton(root, text=button_text, command = lambda: button_command(root, new_parameters, 
+                                                                                                       ["language"], 
+                                                                                                       [language]))
+    button_write_data.pack()
+    
+    root.mainloop()
+
+    return list(new_parameters.parameters_dict.values())[0]
+
+def choose_dataset_build_new_model(text_for_labels, datasets, build_new_model):
     
     root, new_parameters = create_root()
     
@@ -54,17 +77,17 @@ def main_graphing(text_for_labels, datasets, rebuild_model):
     
     label_2 = ctk.CTkLabel(root, text=text_for_labels[1])
     
-    if rebuild_model != 'Y':
+    if build_new_model != 'Y':
         
-        rebuild_model = ctk.BooleanVar()
+        build_new_model = ctk.BooleanVar(value = True)
     
-        textbox_2 = ctk.CTkOptionMenu(root, values=['True', 'False'], variable=rebuild_model)
+        textbox_2 = ctk.CTkOptionMenu(root, values=['True', 'False'], variable=build_new_model)
     
     else:
         
-        rebuild_model = ctk.BooleanVar(value=1)
+        build_new_model = ctk.BooleanVar(value=True)
         
-        textbox_2 = ctk.CTkOptionMenu(root, values=['True', 'False'], variable=rebuild_model, state = 'disabled')
+        textbox_2 = ctk.CTkOptionMenu(root, values=['True', 'False'], variable=build_new_model, state = 'disabled')
     
 
     label_1.pack()
@@ -76,8 +99,8 @@ def main_graphing(text_for_labels, datasets, rebuild_model):
     textbox_2.pack()
     
     button_write_data = ctk.CTkButton(root, text=text_for_labels[-1], command = lambda: button_command(root, new_parameters, 
-                                                                                                       ["dataset_chosen", "rebuild_model"], 
-                                                                                                       [dataset_chosen, rebuild_model]))
+                                                                                                       ["dataset_chosen", "build_new_model"], 
+                                                                                                       [dataset_chosen, build_new_model]))
     button_write_data.pack()
     
     root.mainloop()
@@ -116,6 +139,29 @@ def new_learning_parameters(text_for_labels):
     root.mainloop()
 
     return new_parameters.parameters_dict
+
+def choose_making_a_prediction(text_for_labels):
+    
+    root, new_parameters = create_root()
+  
+    label_1 = ctk.CTkLabel(root, text=text_for_labels[0])
+
+    make_a_prediction = ctk.BooleanVar(value = True)
+
+    textbox_1 = ctk.CTkOptionMenu(root, values=['True', 'False'], variable=make_a_prediction)
+    
+    label_1.pack()
+    
+    textbox_1.pack()
+    
+    button_write_data = ctk.CTkButton(root, text=text_for_labels[-1], command = lambda: button_command(root, new_parameters, 
+                                                                                                         ["make_a_prediction"], 
+                                                                                                         [make_a_prediction]))
+    button_write_data.pack()
+    
+    root.mainloop()
+
+    return list(new_parameters.parameters_dict.values())[0]
 
 def choose_models_to_load(text_for_labels):
     

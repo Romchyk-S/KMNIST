@@ -5,6 +5,8 @@ Created on Fri Feb 16 13:17:55 2024
 @author: romas
 """
 
+import os as os
+
 import tensorflow.keras.layers as tkl
 
 import tensorflow.keras.losses as tklosses
@@ -27,6 +29,18 @@ import torch.utils.data as tudata
 
 import nn_torch_class as nntc
 
+
+def find_model_amount(library: str) -> int:
+    
+    try:
+        
+        models_built_amount = len(os.listdir(f'./saved_models_{library}'))
+        
+    except FileNotFoundError:
+        
+        models_built_amount = 0
+        
+    return models_built_amount
 
 def build_torch_model(X_train, Y_train, X_test, Y_test, filepath: str, epochs: int,  kernel_size: tuple, pool_size: tuple, classes_amount: int,  batch_size: int):
     
