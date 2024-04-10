@@ -17,8 +17,6 @@ import tensorflow.keras.models as tkm
 
 import os
 
-
-
 import load_plot_data as lpd
 
 import model_work_functions as mwf
@@ -147,4 +145,4 @@ else:
     
     model_keras.summary()
 
-#     mwf.make_and_plot_prediction(X_train, Y_train, indexes, model_keras, classmap, elements_to_plot)
+    mwf.make_and_plot_prediction(X_train, Y_train, indexes, model_keras, classmap, elements_to_plot)

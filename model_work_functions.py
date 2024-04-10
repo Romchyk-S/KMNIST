@@ -199,10 +199,6 @@ def build_keras_model(X_train, Y_train, X_test, Y_test, filepath: str, epochs: i
     
     model.compile(loss = tklosses.SparseCategoricalCrossentropy(from_logits = True), optimizer='adam', metrics=['accuracy'])
     
-    # print(X_train.shape)
-    
-    # print(X_train.shape[1:4])
-
     print("Training the model")
     
     start = tm.perf_counter()
