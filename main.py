@@ -21,6 +21,7 @@ import graphic_interface as gi
 #from sklearn.metrics import f1_score
 
 device_torch = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+plt.rcParams['font.family'] = 'TakaoGothic'
 
 language_versions = ['Українська', 'English']
 chosen_language = gi.choose_language("Записати вибір/Write selection", language_versions)
@@ -37,17 +38,13 @@ text_for_labels = language_versions.get(chosen_language, 'ua')
 
 datasets = [name for name in os.listdir() if os.path.isdir(os.path.join(name)) and name[0] == 'k']
 
-plt.rcParams['font.family'] = 'TakaoGothic'
-
 models_built_amount_keras = mwf.find_model_amount("keras")
 models_built_amount_pytorch = mwf.find_model_amount("pytorch")
 
 build_new_model = 'N'
-
 if models_built_amount_keras == 0 or models_built_amount_pytorch == 0:
     build_new_model = 'Y'
     
-
 save_filepath_keras = './saved_models_keras'
 save_filepath_pytorch = f'./saved_models_pytorch/model_{models_built_amount_pytorch}'
 
@@ -55,10 +52,7 @@ parms = gi.choose_dataset_build_new_model(text_for_labels, datasets, build_new_m
 dataset_chosen = parms.get("dataset_chosen", "kmnist")
 
 rebuild_model = parms.get("build_new_model", "Y")
-
 elements_to_plot = (parms.get('elements_to_plot_0'), parms.get('elements_to_plot_1'))
-
-rebuild_model = parms.get("rebuild_model", "Y")
 
 X_train, Y_train, X_test, Y_test, classmap = lpd.data_loading(dataset_chosen)
 classes_amount = len(set(Y_train))
@@ -75,11 +69,9 @@ if rebuild_model:
 
     kernel_size = parms_learning.get("kernel_size").split('x')
     pool_size = parms_learning.get("pool_size").split('x')
-    
     kernel_size = tuple(int(num) for num in kernel_size)
     pool_size = tuple(int(num) for num in pool_size)
 
-    
     if epochs < 1:
         epochs = 10
         print(f"Epochs changed by default to {epochs}")

@@ -94,7 +94,6 @@ def choose_dataset_build_new_model(text_for_labels, datasets, build_new_model):
 def new_learning_parameters(text_for_labels):
     
     # add optimizer option menu
-    
     root, new_parameters = create_root()
     
     epochs = ctk.IntVar()
@@ -110,23 +109,15 @@ def new_learning_parameters(text_for_labels):
     textbox_2.pack()
     
     kernel_size = ctk.StringVar()
-    
     label_3 = ctk.CTkLabel(root, text=text_for_labels[2])
-    
     textbox_3 = ctk.CTkOptionMenu(root, values=['3x3', '5x5', '7x7', '9x9'], variable=kernel_size)
-    
     label_3.pack()
-    
     textbox_3.pack()
     
     pool_size = ctk.StringVar()
-    
     label_4 = ctk.CTkLabel(root, text=text_for_labels[3])
-    
     textbox_4 = ctk.CTkOptionMenu(root, values=['2x2', '3x3', '4x4', '5x5'], variable=pool_size)
-    
     label_4.pack()
-    
     textbox_4.pack()
     
     button_write_data = ctk.CTkButton(root, text=text_for_labels[-1], command = lambda: button_command(root, new_parameters, 
@@ -135,7 +126,6 @@ def new_learning_parameters(text_for_labels):
     button_write_data.pack()
     
     root.mainloop()
-
     return new_parameters.parameters_dict
 
 def choose_making_a_prediction(text_for_labels):
