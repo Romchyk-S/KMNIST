@@ -32,7 +32,13 @@ def data_loading(dataset_chosen: str):
         
         classmap = pd.read_csv(f'./{dataset_chosen}/{dataset_chosen}_classmap.csv')
         
-        return X_train, Y_train, X_test, Y_test, classmap
+    else:
+        
+        print('Kkanji 2 not supported now')
+        
+        # do for kkanji2
+        
+    return X_train, Y_train, X_test, Y_test, classmap
 
 def plot_chars(imgs, labels, classmap, plotted_elements: tuple, *args,  **kwargs):
     
@@ -47,8 +53,6 @@ def plot_chars(imgs, labels, classmap, plotted_elements: tuple, *args,  **kwargs
     indexes_given = len(indexes) > 0
 
     fig, axes_list = plt.subplots(plotted_elements[0], plotted_elements[1], figsize=(plotted_elements[0]+1, plotted_elements[0]+1))
-    
-    
     
     if indexes_given: 
         

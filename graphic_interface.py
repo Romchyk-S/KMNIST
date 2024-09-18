@@ -74,7 +74,6 @@ def choose_dataset_build_new_model(text_for_labels, datasets, build_new_model):
     
     textbox_1 = ctk.CTkOptionMenu(root, values=datasets, variable=dataset_chosen)
     
-    
     label_2 = ctk.CTkLabel(root, text=text_for_labels[1])
     
     if build_new_model != 'Y':
@@ -89,6 +88,17 @@ def choose_dataset_build_new_model(text_for_labels, datasets, build_new_model):
         
         textbox_2 = ctk.CTkOptionMenu(root, values=['True', 'False'], variable=build_new_model, state = 'disabled')
     
+    elements_to_plot_0 = ctk.IntVar()
+    
+    elements_to_plot_1 = ctk.IntVar()
+    
+    label_3 = ctk.CTkLabel(root, text=text_for_labels[2])
+    
+    elements_to_plot_list = [str(num) for num in list(range(1, 11))]
+    
+    textbox_3 = ctk.CTkOptionMenu(root, values=elements_to_plot_list, variable=elements_to_plot_0)
+    
+    textbox_4 = ctk.CTkOptionMenu(root, values=elements_to_plot_list, variable=elements_to_plot_1)
 
     label_1.pack()
     
@@ -98,9 +108,15 @@ def choose_dataset_build_new_model(text_for_labels, datasets, build_new_model):
     
     textbox_2.pack()
     
+    label_3.pack()
+    
+    textbox_3.pack()
+    
+    textbox_4.pack()
+    
     button_write_data = ctk.CTkButton(root, text=text_for_labels[-1], command = lambda: button_command(root, new_parameters, 
-                                                                                                       ["dataset_chosen", "build_new_model"], 
-                                                                                                       [dataset_chosen, build_new_model]))
+                                                                                                       ["dataset_chosen", "build_new_model", "elements_to_plot_0", "elements_to_plot_1"], 
+                                                                                                       [dataset_chosen, build_new_model, elements_to_plot_0, elements_to_plot_1]))
     button_write_data.pack()
     
     root.mainloop()
@@ -131,9 +147,29 @@ def new_learning_parameters(text_for_labels):
     
     textbox_2.pack()
     
+    kernel_size = ctk.StringVar()
+    
+    label_3 = ctk.CTkLabel(root, text=text_for_labels[2])
+    
+    textbox_3 = ctk.CTkOptionMenu(root, values=['3x3', '5x5', '7x7', '9x9'], variable=kernel_size)
+    
+    label_3.pack()
+    
+    textbox_3.pack()
+    
+    pool_size = ctk.StringVar()
+    
+    label_4 = ctk.CTkLabel(root, text=text_for_labels[3])
+    
+    textbox_4 = ctk.CTkOptionMenu(root, values=['2x2', '3x3', '4x4', '5x5'], variable=pool_size)
+    
+    label_4.pack()
+    
+    textbox_4.pack()
+    
     button_write_data = ctk.CTkButton(root, text=text_for_labels[-1], command = lambda: button_command(root, new_parameters, 
-                                                                                                       ["epochs", "batch_size"], 
-                                                                                                       [epochs, batch_size]))
+                                                                                                       ["epochs", "batch_size", "kernel_size", 'pool_size'], 
+                                                                                                       [epochs, batch_size, kernel_size, pool_size]))
     button_write_data.pack()
     
     root.mainloop()

@@ -7,8 +7,6 @@ Created on Sun Feb 25 12:38:17 2024
 
 import torch.nn as nn
 
-
-
 class NN_torch(nn.Module):
     
     def __init__(self, pool_size: tuple, kernel_size: tuple, classes_amount: int, input_channels: int):
