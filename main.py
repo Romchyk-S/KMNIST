@@ -58,7 +58,15 @@ if rebuild_model:
     parms_learning = gi.new_learning_parameters(text_for_labels[2:])
     epochs = parms_learning.get("epochs", 10)
     batch_size = parms_learning.get("batch_size", 8)
-
+    
+    if epochs < 1:
+        epochs = 10
+        print(f"Epochs changed by default to {epochs}")
+        
+    if batch_size < 1:
+        batch_size = 8
+        print(f"Batch size changed by default to {batch_size}")
+        
     print("Keras training")
     model_keras = mwf.build_keras_model(X_train, Y_train, X_test, Y_test, save_filepath_keras,
                                         models_built_amount_keras, epochs, kernel_size, 

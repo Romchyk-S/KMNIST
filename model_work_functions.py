@@ -7,6 +7,7 @@ Created on Fri Feb 16 13:17:55 2024
 
 import matplotlib.pyplot as plt
 import os as os
+import keras.utils as kutils
 import tensorflow.keras.layers as tkl
 import tensorflow.keras.losses as tklosses
 import tensorflow.keras.models as tkm
@@ -63,9 +64,9 @@ def build_keras_model(X_train, Y_train, X_test, Y_test, filepath: str, models_bu
      tkl.Dense(32, activation='relu'),
      tkl.Dense(16, activation='relu'),
      tkl.Dense(classes_amount)])
-
+    
     # add more metrics
-    model.compile(loss = tklosses.SparseCategoricalCrossentropy(from_logits = True), optimizer=optimizer, metrics=['accuracy', skmetrics.f1_score])
+    model.compile(loss = tklosses.SparseCategoricalCrossentropy(from_logits = True), optimizer=optimizer, metrics=['accuracy'])
     
     print("Training the model")
     start = tm.perf_counter()
@@ -80,6 +81,8 @@ def build_keras_model(X_train, Y_train, X_test, Y_test, filepath: str, models_bu
     print()
     print("Model accuracy on the test set")
     model.evaluate(X_test, Y_test) # test the CNN  
+
+    kutils.plot_model(model, to_file = f'{filepath}/model_{models_built_amount}.png', show_shapes = True)
     
     print("Summary of the model:")
     model.summary()
@@ -159,6 +162,8 @@ def build_torch_model(X_train, Y_train, X_test, Y_test, filepath: str, epochs: i
         train_acc_history.append(train_accuracy_epoch)
         print()
             
+    # plot model
+    
     print(f"Time taken to train {round(tm.perf_counter()-start, 3)} seconds")
     total_correct, total_samples = 0, 0
     
@@ -203,6 +208,8 @@ def make_and_plot_prediction(imgs, labels, indexes, model, classmap, elements_to
         imgs_to_predict = torch.tensor(imgs_to_predict, dtype=float)
         prediction = model(imgs_to_predict)
         prediction = prediction.detach().numpy()
+    
+    #plot loaded models
     
     classes = np.argmax(prediction, axis = 1)
     print("Plotting predictions")

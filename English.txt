@@ -1,7 +1,10 @@
 Choose data
 Build a new model?
+How many elements to plot?
 Enter training epochs
 Enter batch size
+Choose kernel size
+Choose pool size
 Make a prediction?
 Choose keras model
 Choose pytorch model
