@@ -24,24 +24,30 @@ import tensorflow.keras.models as tkm
 
 # import sklearn.model_selection as skms
 
+import torch as torch
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import tensorflow as tf
+import tensorflow.keras.models as tkm
+import sklearn.model_selection as skms
 import os
-
 import load_plot_data as lpd
-
 import model_work_functions as mwf
-
 import graphic_interface as gi
+from sklearn.metrics import f1_score
 
 print()
 
-ua_text = ['Оберіть дані', 'Будувати нову модель?', 'Скільки елементів вивести на графік?', 'Введіть кількість епох навчання', 
-           'Введіть розмір партії навчання', 'Оберіть розмір ядра (kernel)', 'Оберіть розмір матриці об`єднання (pooling)', 'Робити передбачення?', 'Оберіть модель keras', 'Оберіть модель pytorch', 'Записати вибір']
+print(tf.config.list_physical_devices("GPU"))
 
-en_text = ['Choose data', 'Build a new model?', 'How many elements to plot?', 'Enter training epochs', 
-           'Enter batch size', 'Choose kernel size', 'Choose pool size', 'Make a prediction?', 'Choose keras model',  'Choose pytorch model', 'Write selection']
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+print(DEVICE)
+
+print()
 
 language_versions = {'Українська': ua_text, 'English': en_text}
-
 chosen_language = gi.choose_language("Записати вибір/Write selection", list(language_versions.keys()))
 
 text_for_labels = language_versions.get(chosen_language, 'ua')
@@ -60,35 +66,39 @@ models_built_amount_keras = mwf.find_model_amount("keras")
 
 models_built_amount_pytorch = mwf.find_model_amount("pytorch")
 
+text_for_labels = language_versions.get(chosen_language, language_versions.get('Українська'))
+subfolders = next(os.walk('.'))[1]
+datasets = list(filter(lambda x: x[0] == 'k', subfolders))
+plt.rcParams['font.family'] = 'TakaoGothic'
+
+elements_to_plot = 3, 3
+kernel_size = 3, 3
+pool_size = 2, 2
+
+models_built_amount_keras = mwf.find_model_amount("keras")
+models_built_amount_pytorch = mwf.find_model_amount("pytorch")
+
 build_new_model = 'N'
 
 if models_built_amount_keras == 0 or models_built_amount_pytorch == 0:
-        
     build_new_model = 'Y'
     
-save_filepath_keras = f'./saved_models_keras/model_{models_built_amount_keras}/model_{models_built_amount_keras}.keras'
 
+save_filepath_keras = './saved_models_keras'
 save_filepath_pytorch = f'./saved_models_pytorch/model_{models_built_amount_pytorch}'
 
-
-
 parms = gi.choose_dataset_build_new_model(text_for_labels, datasets, build_new_model)
-
 dataset_chosen = parms.get("dataset_chosen", "kmnist")
 
 rebuild_model = parms.get("build_new_model", "Y")
 
 elements_to_plot = (parms.get('elements_to_plot_0'), parms.get('elements_to_plot_1'))
 
-print(elements_to_plot)
-
+rebuild_model = parms.get("rebuild_model", "Y")
 
 X_train, Y_train, X_test, Y_test, classmap = lpd.data_loading(dataset_chosen)
-
 classes_amount = len(set(Y_train))
-
 indexes = lpd.plot_chars(X_train, Y_train, classmap, elements_to_plot)
-
 
 if rebuild_model:
     
@@ -97,88 +107,50 @@ if rebuild_model:
     # probably add stride and padding
     
     epochs = parms_learning.get("epochs", 10)
+    batch_size = parms_learning.get("batch_size", 8)
 
-    batch_size = parms_learning.get("batch_size", 5)
-    
     kernel_size = parms_learning.get("kernel_size").split('x')
-    
     pool_size = parms_learning.get("pool_size").split('x')
     
     kernel_size = tuple(int(num) for num in kernel_size)
-    
-    # pool_size = tuple(int(num) for num in pool_size)
+    pool_size = tuple(int(num) for num in pool_size)
 
+    print("Keras training")
+    model_keras = mwf.build_keras_model(X_train, Y_train, X_test, Y_test, save_filepath_keras,
+                                        models_built_amount_keras, epochs, kernel_size, 
+                                        pool_size, classes_amount, batch_size)
+    print("Pytorch training")
     
-    # print("Keras training")
+    model_pytorch = mwf.build_torch_model(X_train, Y_train, X_test, Y_test, save_filepath_pytorch, epochs, kernel_size, 
+                                          pool_size, classes_amount, batch_size)  
+    make_a_prediction = gi.choose_making_a_prediction(text_for_labels[4:])
     
-    # model_keras = mwf.build_keras_model(X_train, Y_train, X_test, Y_test, save_filepath_keras, epochs, kernel_size, 
-    #                             pool_size, classes_amount, batch_size)
-    
-    
-    # print("Pytorch training")
-    
-    # model_pytorch = mwf.build_torch_model(X_train, Y_train, X_test, Y_test, save_filepath_pytorch, epochs, kernel_size, 
-    #                                       pool_size, classes_amount, batch_size)
-    
-    # make_a_prediction = gi.choose_making_a_prediction(text_for_labels[7:])
-    
-    # if make_a_prediction:
+    if make_a_prediction: 
+        print("Keras prediction")
+        mwf.make_and_plot_prediction(X_train, Y_train, indexes, model_keras, classmap, elements_to_plot, 
+                                      f'Keras model_{models_built_amount_keras}', dataset_chosen)
         
-    #     print("Keras prediction")
-    
-    #     mwf.make_and_plot_prediction(X_train, Y_train, indexes, model_keras, classmap, elements_to_plot, 
-    #                                   f'Keras model_{models_built_amount_keras}', dataset_chosen)
-        
-    #     print("Pytorch prediction")
-        
-    #     mwf.make_and_plot_prediction(X_train, Y_train, indexes, model_pytorch, classmap, elements_to_plot, 
-    #                                   f'Pytorch model_{models_built_amount_pytorch}', dataset_chosen)
+        print("Pytorch prediction")
+        mwf.make_and_plot_prediction(X_train, Y_train, indexes, model_pytorch, classmap, elements_to_plot, 
+                                      f'Pytorch model_{models_built_amount_pytorch}', dataset_chosen)
     
 else:
     
     chosen_models = gi.choose_models_to_load(text_for_labels[8:])
-    
-    model_keras = chosen_models.get("model_keras")
-    
-    model_pytorch = chosen_models.get("model_pytorch")
-    
-    
-    # create folder
-    filepath_keras = f'./saved_models_keras/model_{models_built_amount_keras}/{model_keras}.keras'
-    
-    filepath_pytorch = f'./saved_models_pytorch/{model_pytorch}'
-    
-    print(filepath_pytorch)
-    
-    model_keras = keras.layers.TFSMLayer(filepath_keras, call_endpoint='serving_default')
-    
-    # model_pytorch = torch.load(filepath_pytorch)
-    
-    
-    # try:
-        
-    #     open(f'{filepath_keras}/model_summary.txt', 'r')
-        
-    # except FileNotFoundError:
-        
-    #     print('Adding uncreated summary')
-        
-    #     with open(f'{filepath_keras}/model_summary.txt', 'w') as f:
-        
-    #         model_keras.summary(print_fn=lambda x: f.write(x + '\n'))
-            
-    # try:
-        
-    #     open(f'{filepath_pytorch}/model_summary.txt', 'r')
-        
-    # except FileNotFoundError:
-        
-    #     print('Adding uncreated summary')
-        
-    #     with open(f'{filepath_pytorch}/model_summary.txt', 'w') as f:
-            
-    #         print(info.summary_string(model_pytorch))
-    
-    # model_keras.summary()
 
-    # mwf.make_and_plot_prediction(X_train, Y_train, indexes, model_keras, classmap, elements_to_plot)
+    filepath_keras = f'./saved_models_keras/{model_keras}'
+    filepath_pytorch = f'./saved_models_pytorch/{model_pytorch}'
+    model_keras = tkm.load_model(filepath_keras, compile = True)
+    
+    # how to summarize and load pytorch model?
+    try:
+        # rewrite for new keras saving model process
+        open(f'{filepath_keras}/model_summary.txt', 'r')
+        
+    except FileNotFoundError:
+        print('Adding uncreated summary')
+        with open(f'{filepath_keras}/model_summary.txt', 'w') as f:
+            model_keras.summary(print_fn=lambda x: f.write(x + '\n'))
+    
+    model_keras.summary()
+    mwf.make_and_plot_prediction(X_train, Y_train, indexes, model_keras, classmap, elements_to_plot)
