@@ -20,6 +20,7 @@ import torch.optim as optim
 import torch.utils.data as tudata
 import nn_torch_class as nntc
 import load_plot_data as lpd
+import sklearn.metrics as skmetrics
 
 def find_model_amount(library: str) -> int:
     try:
@@ -34,15 +35,16 @@ def find_model_amount(library: str) -> int:
         models_built_amount = 0
     return models_built_amount
 
-def plot_learning_curve(metric: str, epoch_range: list, history: list, models_built_amount: int):    
+def plot_learning_curve(metric: str, epoch_range: list, history: list, models_built_amount: int, library: str):    
    
+    # adapt for plotting train and test curves on the same plot
     plt.plot(epoch_range, history[metric])
-    plt.title(f'training_{metric} for keras model_{models_built_amount}')
+    plt.title(f'training_{metric} for {library} model_{models_built_amount}')
     plt.xlabel('epochs')
     plt.ylabel(f'{metric}')   
-    plt.savefig(f'./plots/{metric}_keras_model_{models_built_amount}')
+    plt.savefig(f'./plots/{metric} {library} model_{models_built_amount}')
     plt.show()
-    
+
 def build_torch_model(X_train, Y_train, X_test, Y_test, filepath: str, epochs: int,  
                       kernel_size: tuple, pool_size: tuple, classes_amount: int, 
                       batch_size: int, models_built_amount: int, device: str):
@@ -144,7 +146,7 @@ def build_torch_model(X_train, Y_train, X_test, Y_test, filepath: str, epochs: i
     scheduler.step()
     return model
 
-def build_keras_model(X_train, Y_train, X_test, Y_test, filepath: str, models_built_amount: int, epochs: int, kernel_size: tuple, pool_size: tuple, classes_amount: int, batch_size: int):
+def build_keras_model(X_train, Y_train, X_test, Y_test, filepath: str, models_built_amount: int, epochs: int, kernel_size: tuple, pool_size: tuple, classes_amount: int, batch_size: int, optimizer: str = 'adam'):
     
     model = tkm.Sequential([    
     tkl.Input(X_train.shape[1:4]),
@@ -163,6 +165,7 @@ def build_keras_model(X_train, Y_train, X_test, Y_test, filepath: str, models_bu
      tkl.Dense(16, activation='relu'),
      tkl.Dense(classes_amount)])
 
+    # add more metrics
     model.compile(loss = tklosses.SparseCategoricalCrossentropy(from_logits = True), optimizer='adam', metrics=['accuracy'])
     
     print("Training the model")
@@ -171,8 +174,8 @@ def build_keras_model(X_train, Y_train, X_test, Y_test, filepath: str, models_bu
     history = history.history
     epoch_range = list(range(epochs))
     epoch_range = list(map(lambda x: x+1, epoch_range))
-    plot_learning_curve('accuracy', epoch_range, history, models_built_amount)
-    plot_learning_curve('loss', epoch_range, history, models_built_amount)
+    plot_learning_curve('accuracy', epoch_range, history, models_built_amount, 'keras')
+    plot_learning_curve('loss', epoch_range, history, models_built_amount, 'keras')
     
     print(f"Training takes: {tm.perf_counter()-start} seconds.")
     print()

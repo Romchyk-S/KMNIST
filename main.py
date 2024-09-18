@@ -7,35 +7,30 @@ Created on Thu Feb 15 17:48:11 2024
 
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
-
-# import numpy as np
-
 import matplotlib.pyplot as plt
-
-# import pandas as pd
-
-import keras as keras
-
 import tensorflow.keras.models as tkm
-
-# import torch as torch
-
-# import torchinfo as info
-
-# import sklearn.model_selection as skms
-
 import torch as torch
-import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
 import tensorflow as tf
-import tensorflow.keras.models as tkm
-import sklearn.model_selection as skms
-import os
 import load_plot_data as lpd
 import model_work_functions as mwf
 import graphic_interface as gi
-from sklearn.metrics import f1_score
+# import sklearn.model_selection as skms
+# import numpy as np
+# import matplotlib.pyplot as plt
+# import pandas as pd
+#from sklearn.metrics import f1_score
+
+device_torch = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+language_versions = ['Українська', 'English']
+chosen_language = gi.choose_language("Записати вибір/Write selection", language_versions)
+try:
+    with open(f'{chosen_language}.txt', 'r', encoding='utf-8') as f:
+        text_for_labels = f.readlines()
+except FileNotFoundError:
+    with open('Українська.txt', 'r', encoding='utf-8') as f:
+        text_for_labels = f.readlines()
+    
 
 print()
 
@@ -122,7 +117,7 @@ if rebuild_model:
     print("Pytorch training")
     
     model_pytorch = mwf.build_torch_model(X_train, Y_train, X_test, Y_test, save_filepath_pytorch, epochs, kernel_size, 
-                                          pool_size, classes_amount, batch_size)  
+                                          pool_size, classes_amount, batch_size, device_torch)  
     make_a_prediction = gi.choose_making_a_prediction(text_for_labels[4:])
     
     if make_a_prediction: 
