@@ -1,8 +1,0 @@
-Choose data
-Build a new model?
-Enter training epochs
-Enter batch size
-Make a prediction?
-Choose keras model
-Choose pytorch model
-Write selection

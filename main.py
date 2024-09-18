@@ -6,28 +6,36 @@ Created on Thu Feb 15 17:48:11 2024
 """
 
 import torch as torch
-# import numpy as np
+import numpy as np
 import matplotlib.pyplot as plt
-# import pandas as pd
-# import tensorflow as tf
+import pandas as pd
+import tensorflow as tf
 import tensorflow.keras.models as tkm
-# import sklearn.model_selection as skms
+import sklearn.model_selection as skms
 import os
 import load_plot_data as lpd
 import model_work_functions as mwf
 import graphic_interface as gi
+from sklearn.metrics import f1_score
 
-device_torch = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print()
 
-language_versions = ['Українська', 'English']
-chosen_language = gi.choose_language("Записати вибір/Write selection", language_versions)
-try:
-    with open(f'{chosen_language}.txt', 'r', encoding='utf-8') as f:
-        text_for_labels = f.readlines()
-except FileNotFoundError:
-    with open('Українська.txt', 'r', encoding='utf-8') as f:
-        text_for_labels = f.readlines()
-    
+print(tf.config.list_physical_devices("GPU"))
+
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+print(DEVICE)
+
+print()
+
+ua_text = ['Оберіть дані', 'Будувати нову модель?', 'Введіть кількість епох навчання', 
+           'Введіть розмір партії навчання', 'Робити передбачення?', 'Оберіть модель keras', 'Оберіть модель pytorch', 'Записати вибір']
+en_text = ['Choose data', 'Build a new model?', 'Enter training epochs', 
+           'Enter batch size', 'Make a prediction?', 'Choose keras model',  'Choose pytorch model', 'Write selection']
+
+language_versions = {'Українська': ua_text, 'English': en_text}
+chosen_language = gi.choose_language("Записати вибір/Write selection", list(language_versions.keys()))
+text_for_labels = language_versions.get(chosen_language, language_versions.get('Українська'))
 subfolders = next(os.walk('.'))[1]
 datasets = list(filter(lambda x: x[0] == 'k', subfolders))
 plt.rcParams['font.family'] = 'TakaoGothic'
@@ -66,7 +74,7 @@ if rebuild_model:
     print("Pytorch training")
     
     model_pytorch = mwf.build_torch_model(X_train, Y_train, X_test, Y_test, save_filepath_pytorch, epochs, kernel_size, 
-                                          pool_size, classes_amount, batch_size, device_torch)  
+                                          pool_size, classes_amount, batch_size)  
     make_a_prediction = gi.choose_making_a_prediction(text_for_labels[4:])
     
     if make_a_prediction: 

@@ -81,8 +81,6 @@ def choose_dataset_build_new_model(text_for_labels, datasets, build_new_model):
 
 def new_learning_parameters(text_for_labels):
     
-    # add optimizer option menu
-    
     root, new_parameters = create_root()
     
     epochs = ctk.IntVar()
