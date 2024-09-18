@@ -31,44 +31,13 @@ except FileNotFoundError:
     with open('Українська.txt', 'r', encoding='utf-8') as f:
         text_for_labels = f.readlines()
     
-
-print()
-
 print(tf.config.list_physical_devices("GPU"))
-
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-print(DEVICE)
-
-print()
-
-language_versions = {'Українська': ua_text, 'English': en_text}
-chosen_language = gi.choose_language("Записати вибір/Write selection", list(language_versions.keys()))
 
 text_for_labels = language_versions.get(chosen_language, 'ua')
 
 datasets = [name for name in os.listdir() if os.path.isdir(os.path.join(name)) and name[0] == 'k']
 
 plt.rcParams['font.family'] = 'TakaoGothic'
-
-# into graphic interface
-kernel_size = 3, 3
-
-# into graphic interface
-pool_size = 2, 2
-
-models_built_amount_keras = mwf.find_model_amount("keras")
-
-models_built_amount_pytorch = mwf.find_model_amount("pytorch")
-
-text_for_labels = language_versions.get(chosen_language, language_versions.get('Українська'))
-subfolders = next(os.walk('.'))[1]
-datasets = list(filter(lambda x: x[0] == 'k', subfolders))
-plt.rcParams['font.family'] = 'TakaoGothic'
-
-elements_to_plot = 3, 3
-kernel_size = 3, 3
-pool_size = 2, 2
 
 models_built_amount_keras = mwf.find_model_amount("keras")
 models_built_amount_pytorch = mwf.find_model_amount("pytorch")
@@ -109,6 +78,15 @@ if rebuild_model:
     
     kernel_size = tuple(int(num) for num in kernel_size)
     pool_size = tuple(int(num) for num in pool_size)
+
+    
+    if epochs < 1:
+        epochs = 10
+        print(f"Epochs changed by default to {epochs}")
+        
+    if batch_size < 1:
+        batch_size = 8
+        print(f"Batch size changed by default to {batch_size}")
 
     print("Keras training")
     model_keras = mwf.build_keras_model(X_train, Y_train, X_test, Y_test, save_filepath_keras,

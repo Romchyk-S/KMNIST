@@ -7,6 +7,7 @@ Created on Fri Feb 16 13:17:55 2024
 
 import matplotlib.pyplot as plt
 import os as os
+import keras.utils as kutils
 import tensorflow.keras.layers as tkl
 import tensorflow.keras.losses as tklosses
 import tensorflow.keras.models as tkm
@@ -44,6 +45,57 @@ def plot_learning_curve(metric: str, epoch_range: list, history: list, models_bu
     plt.ylabel(f'{metric}')   
     plt.savefig(f'./plots/{metric} {library} model_{models_built_amount}')
     plt.show()
+
+def build_keras_model(X_train, Y_train, X_test, Y_test, filepath: str, models_built_amount: int, epochs: int, 
+                      kernel_size: tuple, pool_size: tuple, classes_amount: int, batch_size: int, optimizer: str = 'adam'):
+    
+    model = tkm.Sequential([    
+    tkl.Input(X_train.shape[1:4]),
+    tkl.Rescaling(1./255),
+     tkl.Conv2D(32, kernel_size = kernel_size, activation='relu'),
+     tkl.MaxPooling2D(pool_size = pool_size),
+     tkl.Conv2D(64, kernel_size = kernel_size, activation='relu'),
+     tkl.MaxPooling2D(pool_size = pool_size),
+     tkl.Conv2D(128, kernel_size = kernel_size, activation='relu'),
+     tkl.MaxPooling2D(pool_size = pool_size),
+     tkl.Flatten(),
+     # try and show the inner layer workings.
+     tkl.Dense(128, activation='relu'),
+     tkl.Dense(64, activation='relu'),
+     tkl.Dense(32, activation='relu'),
+     tkl.Dense(16, activation='relu'),
+     tkl.Dense(classes_amount)])
+    
+    # add more metrics
+    model.compile(loss = tklosses.SparseCategoricalCrossentropy(from_logits = True), optimizer=optimizer, metrics=['accuracy'])
+    
+    print("Training the model")
+    start = tm.perf_counter()
+    history = model.fit(X_train, Y_train, epochs = epochs, batch_size = batch_size) # train the CNN
+    history = history.history
+    epoch_range = list(range(epochs))
+    epoch_range = list(map(lambda x: x+1, epoch_range))
+    plot_learning_curve('accuracy', epoch_range, history, models_built_amount, 'keras')
+    plot_learning_curve('loss', epoch_range, history, models_built_amount, 'keras')
+    
+    print(f"Training takes: {tm.perf_counter()-start} seconds.")
+    print()
+    print("Model accuracy on the test set")
+    model.evaluate(X_test, Y_test) # test the CNN  
+
+    kutils.plot_model(model, to_file = f'{filepath}/model_{models_built_amount}.png', show_shapes = True)
+    
+    print("Summary of the model:")
+    model.summary()
+    model.save(filepath+f'/model_{models_built_amount}.keras')
+    
+    with open(f'{filepath}/model_{models_built_amount}_summary.txt', 'w') as f:
+        summary = model.summary
+        print(summary)
+        print()
+        model.summary(print_fn=lambda x: f.write(x + '\n'))
+    
+    return model
 
 def build_torch_model(X_train, Y_train, X_test, Y_test, filepath: str, epochs: int,  
                       kernel_size: tuple, pool_size: tuple, classes_amount: int, 
@@ -145,55 +197,6 @@ def build_torch_model(X_train, Y_train, X_test, Y_test, filepath: str, epochs: i
     plot_learning_curve('test_accuracy', epoch_range, history, models_built_amount, 'torch')
     scheduler.step()
     return model
-
-def build_keras_model(X_train, Y_train, X_test, Y_test, filepath: str, models_built_amount: int, epochs: int, kernel_size: tuple, pool_size: tuple, classes_amount: int, batch_size: int, optimizer: str = 'adam'):
-    
-    model = tkm.Sequential([    
-    tkl.Input(X_train.shape[1:4]),
-    tkl.Rescaling(1./255),
-     tkl.Conv2D(32, kernel_size = kernel_size, activation='relu'),
-     tkl.MaxPooling2D(pool_size = pool_size),
-     tkl.Conv2D(64, kernel_size = kernel_size, activation='relu'),
-     tkl.MaxPooling2D(pool_size = pool_size),
-     tkl.Conv2D(128, kernel_size = kernel_size, activation='relu'),
-     tkl.MaxPooling2D(pool_size = pool_size),
-     tkl.Flatten(),
-     # try and show the inner layer workings.
-     tkl.Dense(128, activation='relu'),
-     tkl.Dense(64, activation='relu'),
-     tkl.Dense(32, activation='relu'),
-     tkl.Dense(16, activation='relu'),
-     tkl.Dense(classes_amount)])
-
-    # add more metrics
-    model.compile(loss = tklosses.SparseCategoricalCrossentropy(from_logits = True), optimizer='adam', metrics=['accuracy'])
-    
-    print("Training the model")
-    start = tm.perf_counter()
-    history = model.fit(X_train, Y_train, epochs = epochs, batch_size = batch_size) # train the CNN
-    history = history.history
-    epoch_range = list(range(epochs))
-    epoch_range = list(map(lambda x: x+1, epoch_range))
-    plot_learning_curve('accuracy', epoch_range, history, models_built_amount, 'keras')
-    plot_learning_curve('loss', epoch_range, history, models_built_amount, 'keras')
-    
-    print(f"Training takes: {tm.perf_counter()-start} seconds.")
-    print()
-    
-    print("Model accuracy on the test set")
-    model.evaluate(X_test, Y_test) # test the CNN  
-    
-    print("Summary of the model:")
-    model.summary()
-    model.save(filepath+f'/model_{models_built_amount}.keras')
-    
-    with open(f'{filepath}/model_{models_built_amount}_summary.txt', 'w') as f:
-        summary = model.summary
-        print(summary)
-        print()
-        model.summary(print_fn=lambda x: f.write(x + '\n'))
-    
-    return model
     
 def make_and_plot_prediction(imgs, labels, indexes, model, classmap, elements_to_plot, model_name: str, dataset: str):
     
@@ -207,6 +210,8 @@ def make_and_plot_prediction(imgs, labels, indexes, model, classmap, elements_to
         imgs_to_predict = torch.tensor(imgs_to_predict, dtype=float)
         prediction = model(imgs_to_predict)
         prediction = prediction.detach().numpy()
+    
+    #plot loaded models
     
     classes = np.argmax(prediction, axis = 1)
     print("Plotting predictions")
