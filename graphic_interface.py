@@ -6,27 +6,37 @@ Created on Wed Feb 28 08:39:46 2024
 """
 
 import customtkinter as ctk
+
 import os as os
+
 
 class Program_parameters:
     
     def __init__(self):
+        
         self.parameters_dict = {}
         
     def set_parameters_dict(self, var_names: list, var_values: list):
+        
         self.parameters_dict = {k: v for k, v in list(zip(var_names, var_values))}
 
-def button_command(root, prog_parameters, variables_names, variables):
 
+def button_command(root, prog_parameters, variables_names, variables):
+    
     variables_values = [var.get() for var in variables]
+    
     prog_parameters.set_parameters_dict(variables_names, variables_values)
+    
     root.destroy()
     
 def create_root():
     
     ctk.set_appearance_mode("system")
+
     new_parameters = Program_parameters()
+    
     root = ctk.CTk()
+    
     root.geometry("640x480")
     
     return root, new_parameters
@@ -34,15 +44,20 @@ def create_root():
 def choose_language(button_text, languages_supported):
     
     root, new_parameters = create_root()
+    
     language = ctk.StringVar()
     
     label_1 = ctk.CTkLabel(root, text='Оберіть мову / Choose the language')
+    
     textbox_1 = ctk.CTkOptionMenu(root, values=languages_supported, variable=language)
+    
     label_1.pack()
+    
     textbox_1.pack()
     
     button_write_data = ctk.CTkButton(root, text=button_text, command = lambda: button_command(root, new_parameters, 
-                                                                                                       ["language"],                                                                                                 [language]))
+                                                                                                       ["language"], 
+                                                                                                       [language]))
     button_write_data.pack()
     
     root.mainloop()
@@ -54,25 +69,38 @@ def choose_dataset_build_new_model(text_for_labels, datasets, build_new_model):
     root, new_parameters = create_root()
     
     dataset_chosen = ctk.StringVar(value = datasets[0])
+    
     label_1 = ctk.CTkLabel(root, text=text_for_labels[0])
+    
     textbox_1 = ctk.CTkOptionMenu(root, values=datasets, variable=dataset_chosen)
     
+    
     label_2 = ctk.CTkLabel(root, text=text_for_labels[1])
+    
     if build_new_model != 'Y':
+        
         build_new_model = ctk.BooleanVar(value = True)
+    
         textbox_2 = ctk.CTkOptionMenu(root, values=['True', 'False'], variable=build_new_model)
+    
     else:
+        
         build_new_model = ctk.BooleanVar(value=True)
+        
         textbox_2 = ctk.CTkOptionMenu(root, values=['True', 'False'], variable=build_new_model, state = 'disabled')
     
+
     label_1.pack()
+    
     textbox_1.pack()
     
     label_2.pack()
+    
     textbox_2.pack()
     
     button_write_data = ctk.CTkButton(root, text=text_for_labels[-1], command = lambda: button_command(root, new_parameters, 
-                                                                                                       ["dataset_chosen", "build_new_model"],                                                                                           [dataset_chosen, build_new_model]))
+                                                                                                       ["dataset_chosen", "build_new_model"], 
+                                                                                                       [dataset_chosen, build_new_model]))
     button_write_data.pack()
     
     root.mainloop()
@@ -84,19 +112,28 @@ def new_learning_parameters(text_for_labels):
     root, new_parameters = create_root()
     
     epochs = ctk.IntVar()
+    
     label_1 = ctk.CTkLabel(root, text=text_for_labels[0])
+    
     textbox_1 = ctk.CTkEntry(root, textvariable=epochs)
+    
     label_1.pack()
+    
     textbox_1.pack()
     
     batch_size = ctk.IntVar()
+    
     label_2 = ctk.CTkLabel(root, text=text_for_labels[1])
+    
     textbox_2 = ctk.CTkEntry(root, textvariable=batch_size)
+    
     label_2.pack()
+    
     textbox_2.pack()
     
     button_write_data = ctk.CTkButton(root, text=text_for_labels[-1], command = lambda: button_command(root, new_parameters, 
-                                                                                                       ["epochs", "batch_size"],                                                                                  [epochs, batch_size]))
+                                                                                                       ["epochs", "batch_size"], 
+                                                                                                       [epochs, batch_size]))
     button_write_data.pack()
     
     root.mainloop()
@@ -129,19 +166,31 @@ def choose_making_a_prediction(text_for_labels):
 def choose_models_to_load(text_for_labels):
     
     saved_models_keras = os.listdir("./saved_models_keras")
+    
     saved_models_pytorch = os.listdir("./saved_models_pytorch")
     
     root, new_parameters = create_root()
+    
     model_keras = ctk.StringVar()
+    
     label_1 = ctk.CTkLabel(root, text=text_for_labels[0])
+    
     textbox_1 = ctk.CTkOptionMenu(root, values=saved_models_keras, variable=model_keras)
-    label_1.pack()
-    textbox_1.pack()
+    
     
     model_pytorch = ctk.StringVar()
-    label_2 = ctk.CTkLabel(root, text=text_for_labels[1])        
+    
+    label_2 = ctk.CTkLabel(root, text=text_for_labels[1])
+    
+        
     textbox_2 = ctk.CTkOptionMenu(root, values=saved_models_pytorch, variable=model_pytorch)
+    
+    label_1.pack()
+    
+    textbox_1.pack()
+    
     label_2.pack()
+    
     textbox_2.pack()
     
     button_write_data = ctk.CTkButton(root, text=text_for_labels[-1], command = lambda: button_command(root, new_parameters, 
@@ -152,3 +201,5 @@ def choose_models_to_load(text_for_labels):
     root.mainloop()
 
     return new_parameters.parameters_dict
+
+
